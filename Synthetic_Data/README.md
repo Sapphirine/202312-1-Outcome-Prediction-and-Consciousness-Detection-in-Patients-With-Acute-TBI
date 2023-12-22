@@ -1,7 +1,11 @@
-First install python requirments:
+Install required python libraries:
 
-$ pip install -r requirements.txt
+```
+pip install -r requirements.txt
+```
 
-Then execute synthetic data generation:
+Generate synthetic MRI data for training:
 
-$ python3 generate_synthetic_matlab_file.py <path_to_input_file.mat> <path_to_output_directory>
+````
+python3 generate_synthetic_matlab_file.py <path_to_input_file.mat> <path_to_output_directory>
+````
