@@ -1,93 +1,107 @@
-function [] = preprocess_eeg(train_ratio, path, split_by_patient)
+    % clear;clc;
+    % 
+    % path = '../Data/EEG/';
+    % 
+    % 
+    % %% Find all folders in path 
+    % infarction_folders = dir(path);
+    % %load('image_data.mat');
+    % 
+    % num = 1;
+    % % loop thorugh patient folders 
+    % for i = 4:size(infarction_folders)
+    % 
+    %     % Split patient folder name for later use
+    %     %parts = strsplit(patient_folders(i).name, '_');
+    % 
+    %     % loop through technique folders, skipping fodlers not containing
+    %     % image
+    % 
+    %     new_path = [path,infarction_folders(i).name];
+    %     file_list = dir(new_path);
+    % 
+    %     %% Read in all csv files
+    %     for file = 3:size(file_list)
+    %         filename = [file_list(file).folder, '/', file_list(file).name];
+    %         temp = readtable(filename,'NumHeaderLines',10);
+    %         temp = temp(:, 3:34); %remove non eeg data columns;
+    % 
+    % 
+    %         patient_id = file_list(file).name;
+    % 
+    %         parts = strsplit(patient_id, '.');
+    % 
+    % 
+    % 
+    %         temp_eeg_data = struct('Patient_ID', parts(1) , 'Data', temp);
+    % 
+    %         eeg_data(num) = temp_eeg_data;
+    %         num=num+1;
+    % 
+    %     end
+    % 
+    % end
     
+    function [] = preprocess_eeg()    
     
-    
-    %% Find all folders in path 
-    patient_folders = dir(path);
-    
-    num = 1;
-    % loop thorugh patient folders 
-    for i = 1:size(patient_folders)
-        
-        % Split patient folder name for later use
-        parts = strsplit(patient_folders(i).name, '_');
-    
-        % loop through technique folders, skipping fodlers not containing
-        % images
-        if contains(patient_folders(i).name, 'Infarction')
-    
-            new_path = [path,patient_folders(i).name];
-            file_list(num) = dir(fullfile(new_path, '*.csv'));
-            num = num + 1;
-        
-        end
-    end
-    
-    %% Read in all csv files
-    for file = 1:size(file_list,2)
-        filename = [file_list(file).folder, '/', file_list(file).name];
-        temp = readtable(filename,'NumHeaderLines',10);
-        temp = temp(:, 3:34); %remove non eeg data columns;
-    
-        parts = strsplit(file_list(file).folder, '_');
-    
-        temp_eeg_data = struct('Patient_ID', file_list(file).name, 'Designator', parts(4), ...
-                        'Data', temp);
-    
-        eeg_data(file) = temp_eeg_data;
-    
-    end
-    
+    %% 
+    clear;clc;
+    load("eeg_data.mat")
+    load("PID.mat")
+    split_by_patient = true;
     
     %% Split into training and test data
     if split_by_patient == true
         % iterate through each 
-
+    
         for i = 1:size(eeg_data,2)
             data = eeg_data(i).Data;
             data = transpose(table2array(data));
-
+    
              %round to nearest number divisible by 1000 which is 2 seconds
              cutoff = floor(size(data,2)/1000)*1000;
-
+    
             n = floor(size(data,2)/1000);
-
-            if eeg_data(i).Designator == "Conscious"
-                labels = ones(n, 1) .* (-1).^(0:n-1)';
-                if exist('test_set', 'var')
-                    test_set = horzcat(test_set, data(:,1:cutoff));
-                    test_labels = vertcat(test_labels, labels);
+            if isKey(PID, convertCharsToStrings(eeg_data(i).Patient_ID))
+                if PID(convertCharsToStrings(eeg_data(i).Patient_ID)) == "responsive"
+                    labels = ones(n, 1) .* (-1).^(0:n-1)';
+                    if exist('test_set', 'var')
+                        test_set = horzcat(test_set, data(:,1:cutoff));
+                        test_labels = vertcat(test_labels, labels);
+                    else
+                        test_set = data(:,1:cutoff);
+                        test_labels = labels;
+                    end 
+        
                 else
-                    test_set = data(:,1:cutoff);
-                    test_labels = labels;
-                end 
-                
-            else
-                labels = -1 * ones(n,1);
-                if exist('training_set', 'var')
-                    training_set = horzcat(training_set, data(:,1:cutoff));
-                    training_labels = vertcat(training_labels,labels);
-                else
-                    training_set = data(:,1:cutoff);
-                    training_labels = labels;
-                end 
-            end   
-
-            temp_patient_IDs = struct("Patient_ID", eeg_data(i).Patient_ID, 'Trial_Num', size(labels));
-            patient_IDs(i) = temp_patient_IDs;
-
+                    labels = -1 * ones(n,1);
+                    if exist('training_set', 'var')
+                        training_set = horzcat(training_set, data(:,1:cutoff));
+                        training_labels = vertcat(training_labels,labels);
+                    else
+                        training_set = data(:,1:cutoff);
+                        training_labels = labels;
+                    end 
+                end
+            else 
+                text = 'designator not available'
+            end
+    
+            %temp_patient_IDs = struct("Patient_ID", eeg_data(i).Patient_ID, 'Trial_Num', size(labels));
+            %patient_IDs(i) = temp_patient_IDs;
+    
         end
     else 
         for i = 1:size(eeg_data,2)
             data = eeg_data(i).Data;
             data = transpose(table2array(data));
-        
-        
+    
+    
             %round to nearest number divisible by 1000 which is 2 seconds
             cutoff = floor(size(data,2)/1000)*1000;
-        
+    
             split_idx = (round(train_ratio*cutoff/1000))*1000; %make sure samples split into 2 second intervals
-        
+    
             if exist('training_set', 'var')
                 test_set = horzcat(test_set, data(:,split_idx+1:cutoff));
                 training_set = horzcat(training_set, data(:,1:split_idx));
@@ -95,10 +109,10 @@ function [] = preprocess_eeg(train_ratio, path, split_by_patient)
                 test_set = data(:,split_idx+1:cutoff);
                 training_set = data(:,1:split_idx);
             end 
-        
+    
             n = cutoff/1000;
-        
-            if eeg_data(i).Designator == "Conscious"
+    
+            if PID(eeg_data(i).Patient_ID) == "responsive"
                 % alternate between 1 and -1 for squeezing hand and not 
                 %labels = ones(n, 1) .* (-1).^(0:n-1)';
                 labels = ones((cutoff/1000),1);
@@ -107,7 +121,7 @@ function [] = preprocess_eeg(train_ratio, path, split_by_patient)
                 %labels = ones(n, 1) .* (-1).^(0:n-1)';
                 labels = -1 * ones((cutoff/1000),1);
             end 
-        
+    
             if exist('training_labels', 'var')
                 test_labels = vertcat(test_labels, labels((split_idx/1000)+1:((cutoff)/1000)));
                 training_labels = vertcat(training_labels, labels(1:(split_idx)/1000));
@@ -115,10 +129,10 @@ function [] = preprocess_eeg(train_ratio, path, split_by_patient)
                 test_labels = labels((split_idx/1000)+1:((cutoff)/1000));
                 training_labels = labels(1:(split_idx)/1000);
             end
-        
+    
             temp_patient_IDs = struct("Patient_ID", eeg_data(i).Patient_ID, 'Trial_Num', size(labels((split_idx/1000)+1:((cutoff)/1000)-1),1));
             patient_IDs(i) = temp_patient_IDs;
-        
+    
         end 
     end
     
@@ -141,7 +155,7 @@ function [] = preprocess_eeg(train_ratio, path, split_by_patient)
     
     Y = test_labels(1:end-1);
     
-    save('test.mat','X', "Y")
+    save('test.mat','X', "Y", '-v7.3')
     
     %%
     
@@ -159,8 +173,8 @@ function [] = preprocess_eeg(train_ratio, path, split_by_patient)
     
     Y = training_labels(1:end-1);
     
-    save('train.mat','X', "Y")
+    save('train.mat','X', "Y",'-v7.3')
     
     
-    save("eeg_analysis.mat", 'patient_IDs')
-end
+ end
+
