@@ -1,11 +1,17 @@
+
+% Matlab 2023a
+
 %% Clear variables and set 
 clear; clc; close all;
 
-%Path to patient data
-path = 'data/MRI-EEG-March2023/';
+% Path to patient data 
+% Access to patient data will need to be requeted
+eeg_path = '../Data/';
+mri_path = '../Data/MRI';
+
 %fraction of data to be put into training group
 train_ratio = .4;
-split_by_patient = false;
+%split_by_patient = false;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Preprocess the EEG data. 
@@ -21,7 +27,8 @@ split_by_patient = false;
 % and test data and their labels in .mat files for use by other functions. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-preprocess_eeg(train_ratio, path, split_by_patient)
+preprocess_eeg(train_ratio, eeg_path, split_by_patient)
+split_train_test()
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% EEG ANALYSIS
@@ -79,17 +86,12 @@ save('eeg_test_labels.mat', 'eeg_test_labels')
 %   training and test sets based on the training ratio. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-preprocess_mri(path)
+preprocess_mri(mri_path)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% MRI Support Vector Machine model 
+%% MRI Model is now run on google colab. See MRI model folder 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-train_ratio = .6;
-split_by_patient = false;
-
-mri_labels = mri_svm(train_ratio, split_by_patient);
-save('mri_labels.mat', 'mri_labels')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Combine EEG and MRI Results

@@ -1,12 +1,12 @@
 function[patient_results] = combine_results(mri_weight, eeg_weight)
     
     
-    load('eeg_analysis.mat');
+    load('test_ids.mat');
     load('eeg_test_labels.mat');
     
     %% Look at test labels that model generated 
     % Take an average for each patient
-    for i=1:size(patient_IDs,2)
+    for i=1:size(test_ids,2)
             
         if i == 1
             start_idx = 1;

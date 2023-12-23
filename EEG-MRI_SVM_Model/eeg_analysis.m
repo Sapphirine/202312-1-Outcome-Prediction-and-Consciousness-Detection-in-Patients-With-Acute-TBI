@@ -33,7 +33,7 @@
 
 %function [keep1, keep2, elim1, elim2, test_labels] = eeg_analysis(varargin)
 
-function [test_labels] = eeg_analysis(varargin)
+function [train_labels, test_labels] = eeg_analysis(varargin)
 
 
 
@@ -310,6 +310,7 @@ for ii = 1:loop_length
       
       comp_labels = A_train*Hyper;
       comp_labels = sign(comp_labels);
+      train_labels = comp_labels;
       
       
       nmis_list1(ii,j) = sum(comp_labels~=labels);
@@ -447,7 +448,7 @@ msg = ['Reducing dimensionality while preserving ',num2str(round(tmp_s(idx)*100,
 disp(msg)
 msg = ['Projecting onto the principal space of ', num2str(idx), ' dimensions.'];
 disp(msg)
-V = V(:,1:idx); % Reduce dimensionality
+%V = V(:,1:idx); % Reduce dimensionality
 
 % Classify the test labels
 A_test = (V*(V'*(ecog_test_features')))';
