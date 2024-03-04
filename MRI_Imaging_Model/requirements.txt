@@ -1,6 +1,7 @@
 keras
-tensorflow
+tensorflow[and-cuda]
 numpy
 pandas
 scikit-learn
 opencv-python
+matplotlib
