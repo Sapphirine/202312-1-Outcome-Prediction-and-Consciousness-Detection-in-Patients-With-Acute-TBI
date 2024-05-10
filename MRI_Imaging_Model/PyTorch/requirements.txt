@@ -1,0 +1,13 @@
+keras
+tensorflow[and-cuda]
+numpy
+pandas
+scikit-learn
+opencv-python
+matplotlib
+torch
+light-the-torch
+vit-pytorch
+torchinfo
+torchio
+tqdm
